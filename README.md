@@ -47,7 +47,7 @@
 ### Pași de Rulare
 ```bash
 # 1. Clonează repository-ul
-git clone https://github.com/TUUSERNAME/SIMPIM-Project.git
+git clone https://github.com/YaSs969-tech/SIMPIM-Project.git
 
 # 2. Intră în directorul proiectului
 cd SIMPIM-Project
