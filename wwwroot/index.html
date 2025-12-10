@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SI·MPIM — Sistem informatic pacienți & investigații</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    .bg-grid{
+      background-image: radial-gradient(circle at 1px 1px, rgba(14,165,233,.12) 1px, transparent 0);
+      background-size: 22px 22px;
+    }
+    .card{
+      background: rgba(255,255,255,0.92);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 20px rgba(2,6,23,.06), 0 2px 6px rgba(2,6,23,.06);
+      border: 1px solid #e5e7eb;
+    }
+    .h2{ font-size: 1.25rem; font-weight: 600; letter-spacing: -.01em; color:#0d9488; text-align:center; }
+    .h3{ font-size: 1.125rem; font-weight: 600; color:#0d9488; text-align:center; }
+    .muted{ font-size:.875rem; color:#64748b; }
+    .input{
+      width:100%; border:1px solid #e5e7eb; border-radius: .75rem;
+      padding:.5rem .75rem; background:#fff; outline: none;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    .input:focus{ border-color:#2dd4bf; box-shadow: 0 0 0 4px rgba(45,212,191,.15); }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      border:none; border-radius:.75rem; padding:.5rem 1rem;
+      background:#0d9488; color:#fff; font-weight:500; cursor:pointer;
+      transition: background .15s;
+    }
+    .btn:hover{ background:#0f766e; }
+    .btn:active{ background:#115e59; }
+    .btn-alt{
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid #e5e7eb; border-radius:.75rem; padding:.5rem 1rem;
+      background:#fff; color:#374151; cursor:pointer; transition: background .15s;
+    }
+    .btn-alt:hover{ background:#f8fafc; }
+    .btn-refresh{
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid #0d9488; border-radius:.75rem; padding:.5rem 1rem;
+      background:#ecfdf5; color:#0d9488; font-weight:500; cursor:pointer;
+      transition: all .15s;
+    }
+    .btn-refresh:hover{ background:#d1fae5; }
+    .btn-list{
+      display:inline-flex; align-items:center; justify-content:center;
+      border:1px solid #0d9488; border-radius:.75rem; padding:.5rem 1rem;
+      background:#0d9488; color:#fff; font-weight:500; cursor:pointer;
+      transition: background .15s;
+    }
+    .btn-list:hover{ background:#0f766e; }
+    .btn-info{
+      display:inline-flex; align-items:center; justify-content:center;
+      border:none; border-radius:.60rem; padding:.35rem .7rem;
+      background:#06b6d4; color:#fff; font-weight:500; cursor:pointer;
+      transition: background .15s;
+    }
+    .btn-info:hover{ background:#0891b2; }
+    .btn-danger{
+      display:inline-flex; align-items:center; justify-content:center;
+      border:none; border-radius:.60rem; padding:.35rem .7rem;
+      background:#ef4444; color:#fff; font-weight:600; cursor:pointer;
+      transition: background .15s;
+    }
+    .btn-danger:hover{ background:#dc2626; }
+
+    table{ width:100%; border-collapse:collapse; text-align:center; }
+    th, td{ padding:.5rem .75rem; }
+    thead th{
+      font-weight:600; color:#475569; background:#f1f5f9;
+      border-bottom:2px solid #e2e8f0; text-align:center;
+    }
+    tbody td{
+      border-top:1px solid #e5e7eb;
+      text-align:center; vertical-align:middle;
+    }
+    .table-scroll{
+      max-height: 520px;
+      overflow: auto;
+      border-radius: 1rem;
+      border: 1px solid #e2e8f0;
+    }
+    .table-scroll--orders{ max-height: 520px; }
+    .table-scroll thead th{ position: sticky; top: 0; z-index: 2; background:#f1f5f9; }
+    .table-scroll::-webkit-scrollbar{ width:10px; height:10px; }
+    .table-scroll::-webkit-scrollbar-track{ background:#ecfdf5; border-radius:8px; }
+    .table-scroll::-webkit-scrollbar-thumb{ background:#14b8a6; border-radius:8px; border:2px solid #ecfdf5; }
+    .table-scroll::-webkit-scrollbar-thumb:hover{ background:#0d9488; }
+    .table-scroll{ scrollbar-color:#14b8a6 #ecfdf5; scrollbar-width:thin; }
+
+    .hint{ font-size:.78rem; color:#0f766e; font-weight:600; margin-top:.125rem }
+    .pill{
+      display:inline-flex; align-items:center; gap:.5rem;
+      border-radius:999px; padding:.25rem .75rem; font-size:.75rem; font-weight:700;
+      background:#0d9488; color:#fff;
+    }
+
+    .btn-results{
+      border:none; border-radius:.6rem; padding:.35rem .7rem;
+      background:#0d9488; color:#fff; font-weight:600; cursor:pointer;
+    }
+    .btn-results--done{
+      background: #a7f3d0; color:#065f46; cursor: default;
+    }
+
+    .cursor-pointer{ cursor:pointer; }
+    .select-none{ user-select:none; }
+  </style>
+</head>
+
+<body class="bg-gradient-to-b from-cyan-50 via-sky-50 to-white bg-grid min-h-screen text-slate-900">
+
+  <!-- Header -->
+  <header class="relative overflow-hidden">
+    <div class="absolute inset-0 -z-10 bg-[radial-gradient(80%_60%_at_50%_-20%,rgba(20,184,166,.25),rgba(255,255,255,0))]"></div>
+    <div class="max-w-7xl mx-auto px-6 pt-10 pb-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <span class="pill"><i class="fas fa-heart-pulse"></i> SI·MPIM</span>
+          <h1 class="text-2xl md:text-3xl font-bold tracking-tight">
+            Sistem informatic pentru <span class="text-teal-700">managementul pacienților</span> & <span class="text-teal-700">investigațiilor</span>
+          </h1>
+        </div>
+        <div class="hidden md:flex items-center gap-3">
+          <span class="chip px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-100"><i class="fab fa-microsoft"></i> .NET 8</span>
+          <span class="chip px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-100"><i class="fas fa-database"></i> SQLite</span>
+          <span class="chip px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-semibold border border-emerald-100"><i class="fas fa-layer-group"></i> Layered Monolith • Design Patterns</span>
+        </div>
+      </div>
+      <p class="muted mt-2"><i class="fas fa-university"></i> Universitatea Tehnică a Moldovei • Proiectarea sistemelor software</p>
+    </div>
+  </header>
+
+  <!-- GRID: Pacienți (stânga), Comenzi (dreapta) -->
+  <main class="max-w-7xl mx-auto px-6 pb-16 grid gap-8 lg:grid-cols-2">
+
+    <!-- Pacienți -->
+    <section class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="h2">Pacienți</h2>
+        <span class="muted">Adăugare, căutare, ștergere din „Detalii”</span>
+      </div>
+
+      <form id="form-add-patient" class="grid grid-cols-2 gap-3 mb-5">
+        <input class="input" name="Nume" placeholder="Nume" required />
+        <input class="input" name="Prenume" placeholder="Prenume" required />
+        <input class="input col-span-2" name="IDNP" placeholder="IDNP (13 cifre)" required />
+        <select class="input" name="Gen"><option value="M">Masculin</option><option value="F">Feminin</option></select>
+        <input class="input" type="date" name="DataNastere" required />
+        <input class="input col-span-2" name="Adresa" placeholder="Adresa" />
+        <input class="input" name="Telefon" placeholder="Telefon" />
+        <button class="btn col-span-2"><i class="fas fa-user-plus mr-2"></i> Adaugă pacient</button>
+      </form>
+
+      <div class="flex flex-wrap gap-2 mb-3">
+        <input id="search-idnp" class="input flex-1" placeholder="Caută după IDNP" />
+        <button id="btn-search-patient" class="btn"><i class="fas fa-search mr-2"></i> Caută</button>
+        <button id="btn-load-patients" class="btn-refresh"><i class="fas fa-redo mr-2"></i> Reîncarcă lista</button>
+      </div>
+
+      <div class="table-scroll">
+        <table class="w-full text-sm">
+          <thead>
+            <tr>
+              <th>Id</th><th>Nume</th><th>Prenume</th><th>IDNP</th><th>Gen</th><th>Acțiuni</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-patients"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Comenzi -->
+    <section class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="h2">Comenzi investigații</h2>
+        <span class="muted">Introduce Patient Id, alege investigația</span>
+      </div>
+      
+      <form id="form-add-order" class="grid grid-cols-2 gap-3 mb-4">
+        <input id="inp-patient-id" class="input" type="number" placeholder="Patient Id" required />
+        <div class="text-sm text-slate-600 flex items-center"><span id="lb-patient-name" class="truncate">—</span></div>
+        
+        <!-- bloc radio Standard/Urgent/Îndreptare -->
+        <div class="col-span-2 grid grid-cols-3 gap-3">
+          <label class="flex items-center gap-2">
+            <input type="radio" name="order-type" value="standard" checked>
+            <span>Standard</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="radio" name="order-type" value="urgent">
+            <span>Urgent</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="radio" name="order-type" value="indreptare">
+            <span>Îndreptare</span>
+          </label>
+        </div>
+
+        <div class="col-span-2 grid grid-cols-2 gap-3">
+          <input id="inp-invest-search" class="input" placeholder="Caută investigația (cod sau denumire)" />
+          <button id="btn-choose-invest" type="button" class="btn-list"><i class="fas fa-list mr-2"></i> Alege din listă</button>
+        </div>
+
+        <input type="hidden" id="sel-invest-id" />
+        <div class="col-span-2 text-sm text-slate-600"><span id="lb-invest-picked">—</span></div>
+
+        <button class="btn col-span-2"><i class="fas fa-file-medical mr-2"></i> Creează</button>
+      </form>
+
+      <div class="table-scroll" style="max-height: 715px;">
+        <table class="w-full text-sm">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Pacient</th>
+              <th>Investigație</th>
+              <th>Cod</th>
+              <th id="th-order-date" class="cursor-pointer select-none">Data înregistrării</th>
+              <th>Rezultat</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-orders"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Istoric -->
+    <section class="card p-6 lg:col-span-2">
+      <div class="flex items-center justify-between">
+        <h3 class="h3">Istoric pacient</h3>
+        <span class="muted">Filtrare după IDNP</span>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mt-3 mb-5">
+        <input id="hist-idnp" class="input max-w-xs" placeholder="IDNP (13 cifre)" />
+        <button id="btn-filter-history" class="btn"><i class="fas fa-search mr-2"></i> Caută istoricul</button>
+        <button id="btn-clear-history" class="btn-refresh"><i class="fas fa-times mr-2"></i> Resetează</button>
+      </div>
+
+      <h2 class="h2 mb-3">Istoricul investigațiilor</h2>
+      <div class="table-scroll">
+        <table class="w-full text-sm">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Pacient</th>
+              <th>Cod investigație</th>
+              <th>Denumire investigație</th>
+              <th id="th-hist-date" class="cursor-pointer select-none">Data înregistrării comenzii</th>
+              <th>Data înregistrării rezultatelor</th>
+              <th>Rezultat</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-history"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================== COSTURI INVESTIGAȚII ================== -->
+    <section class="card p-6 lg:col-span-2 mt-4">
+      <div class="flex items-center justify-between">
+        <h3 class="h3">Costuri investigații</h3>
+        <span class="muted">Filtru după IDNP + vizualizare pe comenzi / pe pacienți</span>
+      </div>
+
+      <!-- Filtru IDNP & acțiuni -->
+      <div class="flex flex-wrap gap-2 mt-3 mb-4">
+        <input id="cost-idnp" class="input max-w-xs" placeholder="IDNP (13 cifre)" />
+        <button id="btn-filter-costs" class="btn"><i class="fas fa-search mr-2"></i> Filtrează</button>
+        <button id="btn-clear-costs" class="btn-refresh"><i class="fas fa-times mr-2"></i> Resetează</button>
+        <button id="btn-reload-costs" class="btn-refresh"><i class="fas fa-redo mr-2"></i> Reîncarcă</button>
+      </div>
+
+      <!-- Subtab-uri -->
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button id="btn-cost-view-orders" class="btn-list" type="button">
+          <i class="fas fa-list mr-2"></i> Pe comenzi
+        </button>
+        <button id="btn-cost-view-patients" class="btn-alt" type="button">
+          <i class="fas fa-user-group mr-2"></i> Pe pacienți
+        </button>
+      </div>
+
+      <!-- Pe comenzi -->
+      <div id="cost-view-orders">
+        <h4 class="h3 mb-2">Costuri pe comenzi</h4>
+        <div class="table-scroll">
+          <table class="w-full text-sm">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Pacient</th>
+                <th>IDNP</th>
+                <th>Cod</th>
+                <th>Investigație</th>
+                <th>Tip</th>
+                <th>Data comenzii</th>
+                <th>Cost (LEI)</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-cost-orders"></tbody>
+          </table>
+        </div>
+        <div class="mt-3 text-right text-sm">
+          <span class="font-semibold text-slate-700">Cost total (comenzi afișate): </span>
+          <span id="lbl-total-orders" class="font-bold text-emerald-700">0 LEI</span>
+        </div>
+      </div>
+
+      <!-- Pe pacienți -->
+      <div id="cost-view-patients" class="hidden">
+        <h4 class="h3 mb-2">Costuri pe pacienți</h4>
+        <div class="table-scroll">
+          <table class="w-full text-sm">
+            <thead>
+              <tr>
+                <th>Pacient</th>
+                <th>IDNP</th>
+                <th>Număr investigații</th>
+                <th>Total pacient (LEI)</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-cost-patients"></tbody>
+          </table>
+        </div>
+        <div class="mt-3 text-right text-sm">
+          <span class="font-semibold text-slate-700">Cost total (pacienți afișați): </span>
+          <span id="lbl-total-patients" class="font-bold text-emerald-700">0 LEI</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-4 right-4 hidden px-4 py-2 rounded-xl shadow-lg bg-emerald-600 text-white">
+    <i class="fas fa-check-circle mr-2"></i>
+    <span id="toast-message"></span>
+  </div>
+
+  <!-- Modal generic -->
+  <div id="modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full">
+      <div class="flex justify-between items-center px-4 py-3 border-b">
+        <h3 id="modal-title" class="font-semibold"></h3>
+        <button class="btn-alt" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="modal-body" class="p-4 space-y-3 text-sm"></div>
+    </div>
+  </div>
+
+  <!-- Modal Investigații -->
+  <div id="invest-modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl">
+      <div class="flex justify-between items-center px-4 py-3 border-b">
+        <h3 class="font-semibold"><i class="fas fa-search mr-2"></i>Alege investigația</h3>
+        <button class="btn-alt" onclick="closeInvestModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-4">
+        <input id="invest-modal-filter" class="input mb-3" placeholder="Filtrează după cod sau denumire..." />
+        <div id="invest-modal-list" class="max-h-80 overflow-auto rounded-xl ring-1 ring-slate-200 p-2 space-y-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const api = {
+      patients: '/api/patients',
+      inv: '/api/investigatii',
+      orders: '/api/orders',
+      template: (id) => `/api/orders/${id}/results/template`,
+      results:  (id) => `/api/orders/${id}/results`
+    };
+
+    const toast = (msg, ok=true) => {
+      const t = document.getElementById('toast');
+      const icon = t.querySelector('i');
+      const message = document.getElementById('toast-message');
+      
+      message.textContent = msg;
+      
+      if (ok) {
+        t.className = 'fixed bottom-4 right-4 px-4 py-2 rounded-xl shadow-lg bg-emerald-600 text-white';
+        icon.className = 'fas fa-check-circle mr-2';
+      } else {
+        t.className = 'fixed bottom-4 right-4 px-4 py-2 rounded-xl shadow-lg bg-rose-600 text-white';
+        icon.className = 'fas fa-exclamation-circle mr-2';
+      }
+      
+      t.classList.remove('hidden'); setTimeout(()=> t.classList.add('hidden'), 2200);
+    };
+    const $  = (s)=>document.querySelector(s);
+    const $$ = (s)=>document.querySelectorAll(s);
+    const fmt = d => d ? new Date(d).toLocaleString('ro-RO') : '—';
+
+    let patientsById = new Map();
+    let patientsArr  = [];
+    let investigatii = [];
+    let allOrders    = [];
+    let orderSortAsc = false;
+    let histSortAsc  = false;
+
+    // ============= Pacienți =============
+    async function refreshPatientsCache(){
+      const res = await fetch(api.patients);
+      const data = await res.json();
+      patientsArr  = data;
+      patientsById = new Map(data.map(p => [p.id, `${p.nume} ${p.prenume}`]));
+      return data;
+    }
+    async function loadPatients() {
+      const data = await refreshPatientsCache();
+      $('#tbl-patients').innerHTML = data.map(p => `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.nume}</td>
+          <td>${p.prenume}</td>
+          <td>${p.idnp ?? p.IDNP}</td>
+          <td>${p.gen}</td>
+          <td class="space-x-2">
+            <button class="btn-info" onclick='showPatientInfo(${JSON.stringify(p).replace(/'/g,"&apos;")})'>Detalii</button>
+          </td>
+        </tr>`).join('');
+    }
+    function showPatientInfo(p){
+      const html = `
+        <div class="space-y-1">
+          <div><b>Nume:</b> ${p.nume} ${p.prenume}</div>
+          <div><b>IDNP:</b> ${p.idnp ?? p.IDNP}</div>
+          <div><b>Gen:</b> ${p.gen ?? ''}</div>
+          <div><b>Data nașterii:</b> ${p.dataNastere ?? ''}</div>
+          <div><b>Adresă:</b> ${p.adresa ?? ''}</div>
+          <div><b>Telefon:</b> ${p.telefon ?? ''}</div>
+          <div><b>Înregistrat:</b> ${p.dataInregistrarii ?? ''}</div>
+        </div>
+        <div class="pt-3 border-t">
+          <button class="btn-danger" onclick="deletePatient('${p.idnp ?? p.IDNP}')"><i class="fas fa-trash"></i> Șterge pacient</button>
+        </div>`;
+      openModal('Detalii pacient', html);
+    }
+    async function deletePatient(idnp){
+      if (!confirm(`Ștergi pacientul cu IDNP ${idnp}?`)) return;
+      const res = await fetch(`${api.patients}/${idnp}`, { method: 'DELETE' });
+      if (res.ok){ toast('Pacient șters'); closeModal(); await loadPatients(); loadOrders(); loadHistory(); await loadCosts(); }
+      else toast(await res.text(), false);
+    }
+    $('#btn-load-patients').addEventListener('click', e=>{ e.preventDefault(); loadPatients(); });
+    $('#btn-search-patient').addEventListener('click', async e=>{
+      e.preventDefault();
+      const idnp = $('#search-idnp').value.trim();
+      if(!idnp) return;
+      const res = await fetch(`${api.patients}/${idnp}`);
+      if (res.ok){
+        const p = await res.json();
+        $('#tbl-patients').innerHTML = `
+          <tr>
+            <td>${p.id}</td><td>${p.nume}</td><td>${p.prenume}</td>
+            <td>${p.idnp ?? p.IDNP}</td><td>${p.gen}</td>
+            <td class="space-x-2"><button class="btn-info" onclick='showPatientInfo(${JSON.stringify(p).replace(/'/g,"&apos;")})'>Detalii</button></td>
+          </tr>`;
+      } else toast('Pacientul nu a fost găsit', false);
+    });
+    $('#form-add-patient').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = {
+        nume: fd.get('Nume'), prenume: fd.get('Prenume'), idnp: fd.get('IDNP'),
+        gen: fd.get('Gen'), dataNastere: fd.get('DataNastere'),
+        adresa: fd.get('Adresa'), telefon: fd.get('Telefon')
+      };
+      const res = await fetch(api.patients, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+      if (res.ok){ toast('Pacient adăugat'); await loadPatients(); await loadCosts(); e.target.reset(); }
+      else toast(await res.text(), false);
+    });
+
+    // ============= Investigații =============
+    async function refreshInvestigatii(){
+      const res = await fetch(api.inv);
+      investigatii = await res.json();
+      renderInvestModalList('');
+    }
+    function openInvestModal(){ $('#invest-modal').classList.remove('hidden'); $('#invest-modal').classList.add('flex'); }
+    function closeInvestModal(){ $('#invest-modal').classList.add('hidden'); $('#invest-modal').classList.remove('flex'); }
+    function renderInvestModalList(filter){
+      const q = (filter||'').toLowerCase();
+      const list = investigatii.filter(i =>
+        i.cod.toLowerCase().includes(q) || i.denumire.toLowerCase().includes(q));
+      $('#invest-modal-list').innerHTML = list.map(i=>`
+        <div class="flex items-center justify-between p-3 rounded-xl border hover:bg-emerald-50">
+          <div>
+            <div class="font-semibold">${i.cod} — ${i.denumire}</div>
+            <div class="text-xs text-slate-500">ID: ${i.id} • ${i.parametri?.length||0} parametri</div>
+          </div>
+          <button class="btn" onclick="pickInvestigatie(${i.id}, '${i.cod.replace(/'/g,"&#39;")}', '${i.denumire.replace(/'/g,"&#39;")}')"><i class="fas fa-check"></i> Selectează</button>
+        </div>`).join('');
+    }
+    $('#btn-choose-invest').addEventListener('click', openInvestModal);
+    $('#invest-modal-filter').addEventListener('input', e=>renderInvestModalList(e.target.value));
+    $('#inp-invest-search').addEventListener('input', e=>{
+      const q = e.target.value.trim().toLowerCase();
+      const match = investigatii.find(i=> i.cod.toLowerCase()===q || i.denumire.toLowerCase()===q);
+      if (match) pickInvestigatie(match.id, match.cod, match.denumire);
+    });
+    function pickInvestigatie(id, cod, denumire){
+      $('#sel-invest-id').value = String(id);
+      $('#lb-invest-picked').textContent = `${cod} — ${denumire} (ID ${id})`;
+      closeInvestModal();
+    }
+
+    $('#inp-patient-id').addEventListener('input', ()=>{
+      const id = Number($('#inp-patient-id').value);
+      const name = patientsById.get(id);
+      $('#lb-patient-name').textContent = name ? name : '—';
+    });
+
+    // ============= Comenzi =============
+    function renderOrders(rows){
+      $('#tbl-orders').innerHTML = rows.map(o=>{
+        const name = patientsById.get(o.patientId) ?? o.patientId;
+        const done = !!o.dataRezultate;
+        const btn = done
+          ? `<button class="btn-results btn-results--done" disabled><i class="fas fa-check-circle"></i> Rezultate introduse</button>`
+          : `<button class="btn-results" onclick="openResultsModal(${o.id})"><i class="fas fa-plus-circle"></i> Adaugă rezultate</button>`;
+        return `<tr>
+          <td>${o.id}</td>
+          <td>${name}</td>
+          <td>${o.investigatieId}</td>
+          <td>${o.codInvestigatie ?? ''}</td>
+          <td>${fmt(o.dataComanda)}</td>
+          <td>${btn}</td>
+        </tr>`;
+      }).join('');
+    }
+    async function loadOrders(){
+      const res = await fetch(api.orders);
+      allOrders = await res.json();
+      renderOrders(allOrders);
+    }
+    $('#th-order-date').addEventListener('click', ()=>{
+      orderSortAsc = !orderSortAsc;
+      const sorted = [...allOrders].sort((a,b)=>{
+        const da = a.dataComanda ? new Date(a.dataComanda).getTime() : 0;
+        const db = b.dataComanda ? new Date(b.dataComanda).getTime() : 0;
+        return orderSortAsc ? (da - db) : (db - da);
+      });
+      renderOrders(sorted);
+    });
+
+    $('#form-add-order').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const patientId = Number($('#inp-patient-id').value);
+      const investigatieId = Number($('#sel-invest-id').value);
+      if (!patientId || !investigatieId) return toast('Introdu Patient Id și alege investigația', false);
+
+      const typeInput = document.querySelector('input[name="order-type"]:checked');
+      const orderType = typeInput ? typeInput.value : 'standard';
+
+      const payload = { patientId, investigatieId, orderType };
+      const res = await fetch(api.orders, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok){
+        toast('Comandă creată');
+        await loadOrders(); 
+        await loadHistory();
+        await loadCosts();
+        $('#form-add-order').reset();
+        $('#lb-patient-name').textContent = '—';
+        $('#lb-invest-picked').textContent = '—';
+      } else {
+        toast(await res.text(), false);
+      }
+    });
+
+    // ============= Rezultate =============
+    let currentOrderId = null;
+    let currentTemplate = [];
+    async function openResultsModal(orderId){
+      currentOrderId = orderId;
+      const o = allOrders.find(x=>x.id===orderId);
+      const pacient = patientsById.get(o?.patientId)||o?.patientId||'—';
+
+      const resT = await fetch(api.template(orderId));
+      if (!resT.ok){ toast(await resT.text(), false); return; }
+      currentTemplate = await resT.json();
+
+      const head = `
+        <div class="text-sm text-slate-600 mb-2">
+          <div><b>Order Id:</b> ${orderId}</div>
+          <div><b>Pacient:</b> ${pacient}</div>
+          <div><b>Investigație:</b> ${o?.codInvestigatie ?? ''} — ${o?.denumireInvestigatie ?? ''}</div>
+        </div>`;
+
+      const form = currentTemplate.map(p=>{
+        const hasMin = p.valoareMin !== null && p.valoareMin !== undefined;
+        const hasMax = p.valoareMax !== null && p.valoareMax !== undefined;
+        const minStr = hasMin ? p.valoareMin : '…';
+        const maxStr = hasMax ? p.valoareMax : '…';
+        const hint = (hasMin || hasMax) ? `<div class="hint">${minStr} – ${maxStr}</div>` : '';
+        return `
+          <div class="grid grid-cols-3 gap-3 items-center">
+            <div class="muted">
+              <span class="font-semibold text-slate-700">${p.codParametru}</span>
+              &nbsp;—&nbsp;${p.denumire ?? p.denumireParametru}
+              ${hint}
+            </div>
+            <input class="input" data-cod="${p.codParametru}" placeholder="Valoare" />
+            <div class="text-sm text-slate-500">${p.unitate ?? ''}</div>
+          </div>`;
+      }).join('');
+
+      const body = head + `<form id="frm-res" class="grid gap-3">${form}</form>
+        <div class="pt-2">
+          <button class="btn" onclick="submitResults()"><i class="fas fa-check"></i> Trimite rezultate</button>
+        </div>`;
+      openModal('Adaugă rezultate', body);
+    }
+    async function submitResults(){
+      const inputs = $$('#frm-res input[data-cod]');
+      const rezultate = currentTemplate.map(p=>{
+        const input = Array.from(inputs).find(i=>i.dataset.cod===p.codParametru);
+        return {
+          codParametru: p.codParametru,
+          denumireParametru: p.denumire ?? p.denumireParametru,
+          valoare: input?.value || "",
+          unitate: p.unitate ?? "",
+          interpretare: ""
+        };
+      });
+      const res = await fetch(api.results(currentOrderId), {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(rezultate)
+      });
+      if (res.ok){
+        toast('Rezultate salvate');
+        closeModal();
+        await loadOrders(); await loadHistory(); await loadCosts();
+      } else toast(await res.text(), false);
+    }
+
+    // ============= Istoric =============
+    function renderHistory(rows){
+      $('#tbl-history').innerHTML = rows.map(o=>{
+        const rezId = `rez-${o.id}`;
+        const pacient = patientsById.get(o.patientId) ?? o.patientId;
+        return `
+          <tr>
+            <td>${o.id}</td>
+            <td>${pacient}</td>
+            <td>${o.codInvestigatie ?? ''}</td>
+            <td>${o.denumireInvestigatie ?? ''}</td>
+            <td>${fmt(o.dataComanda)}</td>
+            <td>${fmt(o.dataRezultate)}</td>
+            <td><button class="btn" onclick="showResults('${rezId}', ${o.id})"><i class="fas fa-eye mr-2"></i> Vizualizează</button></td>
+          </tr>
+          <tr id="${rezId}" class="hidden">
+            <td class="bg-slate-50" colspan="7"><span class="muted">Nu sunt rezultate</span></td>
+          </tr>`;
+      }).join('');
+    }
+    async function loadHistory(){
+      const res = await fetch(api.orders);
+      if (!res.ok){ $('#tbl-history').innerHTML=''; return; }
+      const rows = await res.json();
+      renderHistory(rows);
+    }
+    $('#th-hist-date').addEventListener('click', async ()=>{
+      histSortAsc = !histSortAsc;
+      const res = await fetch(api.orders);
+      const rows = await res.json();
+      const sorted = [...rows].sort((a,b)=>{
+        const da = a.dataComanda ? new Date(a.dataComanda).getTime() : 0;
+        const db = b.dataComanda ? new Date(b.dataComanda).getTime() : 0;
+        return histSortAsc ? (da - db) : (db - da);
+      });
+      renderHistory(sorted);
+    });
+    $('#btn-filter-history').addEventListener('click', ()=>{
+      const idnp = $('#hist-idnp').value.trim();
+      if (!idnp){ loadHistory(); return; }
+      const p = patientsArr.find(x => (x.idnp || x.IDNP) === idnp);
+      if (!p){ toast('Pacientul nu a fost găsit după IDNP', false); return; }
+      const rows = Array.from(allOrders);
+      renderHistory(rows.filter(o=>o.patientId===p.id));
+    });
+    $('#btn-clear-history').addEventListener('click', ()=>{ $('#hist-idnp').value=''; loadHistory(); });
+
+    async function showResults(rowId, orderId){
+      const row = document.getElementById(rowId);
+      const alreadyLoaded = row.dataset.loaded === '1';
+      row.classList.toggle('hidden');
+      if (alreadyLoaded) return;
+
+      const res = await fetch(api.results(orderId));
+      const cell = row.querySelector('td');
+      if (!res.ok){ cell.innerHTML = `<span class="text-rose-600">Eroare la încărcare</span>`; return; }
+      const rezult = await res.json();
+      row.dataset.loaded = '1';
+      cell.innerHTML = (rezult.length ? rezult.map(r => `
+        <div class="flex gap-3 items-center py-1">
+          <div class="w-24 font-mono text-slate-600">${r.codParametru}</div>
+          <div class="flex-1">${r.denumireParametru ?? ''}</div>
+          <div class="w-24">${r.valoare ?? ''}</div>
+          <div class="w-20 text-slate-500">${r.unitate ?? ''}</div>
+          <div class="w-40 text-slate-500">${r.interpretare ?? ''}</div>
+        </div>`).join('') : '<span class="muted">Nu sunt rezultate</span>');
+    }
+
+    function openModal(title, bodyHtml){
+      $('#modal-title').textContent = title;
+      $('#modal-body').innerHTML = bodyHtml;
+      $('#modal').classList.remove('hidden'); $('#modal').classList.add('flex');
+    }
+    function closeModal(){ $('#modal').classList.add('hidden'); $('#modal').classList.remove('flex'); }
+
+    // ============= COSTURI =============
+    function badgeOrderType(status){
+      const s = (status || '').toLowerCase();
+      if (s === 'urgent') return '<span class="pill bg-rose-500 text-white px-3 py-1 text-xs font-bold">Urgent</span>';
+      if (s === 'indreptare') return '<span class="pill bg-emerald-500 text-white px-3 py-1 text-xs font-bold">Îndreptare</span>';
+      return '<span class="pill bg-teal-500 text-white px-3 py-1 text-xs font-bold">Standard</span>';
+    }
+
+    function setCostView(view){
+      if (view === 'orders'){
+        $('#cost-view-orders').classList.remove('hidden');
+        $('#cost-view-patients').classList.add('hidden');
+        $('#btn-cost-view-orders').classList.remove('btn-alt'); 
+        $('#btn-cost-view-orders').classList.add('btn-list');
+        $('#btn-cost-view-patients').classList.remove('btn-list');
+        $('#btn-cost-view-patients').classList.add('btn-alt');
+      } else {
+        $('#cost-view-orders').classList.add('hidden');
+        $('#cost-view-patients').classList.remove('hidden');
+        $('#btn-cost-view-orders').classList.remove('btn-list');
+        $('#btn-cost-view-orders').classList.add('btn-alt');
+        $('#btn-cost-view-patients').classList.remove('btn-alt');
+        $('#btn-cost-view-patients').classList.add('btn-list');
+      }
+    }
+
+    async function loadCosts(){
+      try{
+        const idnpFilter = $('#cost-idnp').value.trim();
+        const resP = await fetch(api.patients);
+        if(!resP.ok) return;
+        const patients = await resP.json();
+
+        const filteredPatients = idnpFilter
+          ? patients.filter(p => (p.idnp || p.IDNP) === idnpFilter)
+          : patients;
+
+        const tblOrders = $('#tbl-cost-orders');
+        const tblPatients = $('#tbl-cost-patients');
+        tblOrders.innerHTML = '';
+        tblPatients.innerHTML = '';
+
+        let totalOrders = 0;
+        let totalPatients = 0;
+
+        for(const p of filteredPatients){
+          const cr = await fetch(`/api/patients/${p.id}/costs`);
+          if(!cr.ok) continue;
+          const data = await cr.json();
+          const invs = data.investigatii || [];
+          const patientTotal = data.total ?? invs.reduce((s,i)=>s + (i.cost || 0), 0);
+          if(invs.length){
+            // rânduri pe comenzi
+            invs.forEach(inv=>{
+              totalOrders += inv.cost || 0;
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${inv.orderId}</td>
+                <td>${p.nume} ${p.prenume}</td>
+                <td>${p.idnp || p.IDNP}</td>
+                <td>${inv.cod}</td>
+                <td>${inv.investigatie}</td>
+                <td>${badgeOrderType(inv.status)}</td>
+                <td>${fmt(inv.dataComanda)}</td>
+                <td>${inv.cost} LEI</td>`;
+              tblOrders.appendChild(tr);
+            });
+
+            // rând pe pacient
+            totalPatients += patientTotal;
+            const trP = document.createElement('tr');
+            trP.innerHTML = `
+              <td>${p.nume} ${p.prenume}</td>
+              <td>${p.idnp || p.IDNP}</td>
+              <td>${invs.length}</td>
+              <td>${patientTotal} LEI</td>`;
+            tblPatients.appendChild(trP);
+          }
+        }
+
+        $('#lbl-total-orders').textContent = totalOrders + ' LEI';
+        $('#lbl-total-patients').textContent = totalPatients + ' LEI';
+      } catch(err){
+        console.error(err);
+        toast('Nu s-au putut încărca costurile', false);
+      }
+    }
+
+    // costuri
+    $('#btn-cost-view-orders').addEventListener('click', ()=>setCostView('orders'));
+    $('#btn-cost-view-patients').addEventListener('click', ()=>setCostView('patients'));
+    $('#btn-filter-costs').addEventListener('click', e => { e.preventDefault(); loadCosts(); });
+    $('#btn-clear-costs').addEventListener('click', e => { e.preventDefault(); $('#cost-idnp').value=''; loadCosts(); });
+    $('#btn-reload-costs').addEventListener('click', e => { e.preventDefault(); loadCosts(); });
+
+    // boot
+    (async ()=>{
+      await refreshInvestigatii();
+      await loadPatients();
+      await loadOrders();
+      await loadHistory();
+      await loadCosts();
+      setCostView('orders');
+    })();
+  </script>
+</body>
+</html>
